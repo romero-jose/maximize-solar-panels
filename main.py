@@ -1,14 +1,39 @@
 from typing import List, Tuple, Dict
 import json
+from functools import cache
 
 
 def calculate_panels(
     panel_width: int, panel_height: int, roof_width: int, roof_height: int
 ) -> int:
+    @cache
+    def dp(i: int, j: int) -> int:
+        # Base cases:
+        if i == 0 or j == 0:
+            return 0
+        # Exact fit (for either orientation)
+        if (
+            i % panel_width == 0
+            and j % panel_height == 0
+            or i % panel_height == 0
+            and j % panel_width == 0
+        ):
+            return (i * j) // (panel_width * panel_height)
 
-    # Implementa acá tu solución
+        # Inductive case:
+        # Try splitting roof vertically at the rightmost edge and horizontally at the bottom edge
+        return max(
+            # Vertical
+            dp(i - panel_width, j) + dp(panel_width, j) if i > panel_width else 0,
+            # Vertical, inverted
+            dp(i - panel_height, j) + dp(panel_height, j) if i > panel_height else 0,
+            # Horizontal
+            dp(i, j - panel_height) + dp(i, panel_height) if j > panel_height else 0,
+            # Horizontal, inverted
+            dp(i, j - panel_width) + dp(i, panel_width) if j > panel_width else 0,
+        )
 
-    return 0
+    return dp(roof_width, roof_height)
 
 
 def run_tests() -> None:
